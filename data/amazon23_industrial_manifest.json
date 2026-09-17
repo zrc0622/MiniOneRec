@@ -1,0 +1,16 @@
+{
+  "repo_id": "McAuley-Lab/Amazon-Reviews-2023",
+  "revision": "2b6d039ed471f2ba5fd2acb718bf33b0a7e5598e",
+  "files": [
+    {
+      "path": "raw/review_categories/Industrial_and_Scientific.jsonl",
+      "size": 2347015351,
+      "sha256": "361f68c9535f038fab119099e79207099bee60b2cd7a98246c36b3b12c7aa678"
+    },
+    {
+      "path": "raw/meta_categories/meta_Industrial_and_Scientific.jsonl",
+      "size": 1130006344,
+      "sha256": "114fcde36f6205bde5d0ebed24613a35e475aa06b285011ed1e892dc26da3942"
+    }
+  ]
+}

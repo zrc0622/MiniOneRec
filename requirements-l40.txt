@@ -1,0 +1,25 @@
+# Python 3.11 / Linux x86_64. Install torch==2.6.0 from the cu124 index first.
+# Keep the upstream training stack; omit torchrec/fbgemm/torchaudio/vLLM.
+accelerate==1.10.1
+transformers==4.57.1
+trl==0.24.0
+deepspeed==0.18.0
+bitsandbytes==0.48.1
+datasets==4.2.0
+huggingface-hub==0.35.3
+numpy==1.26.4
+pandas==2.2.2
+scipy==1.14.0
+scikit-learn==1.5.2
+k-means-constrained==0.7.3
+ortools==9.10.4067
+polars==1.35.1
+fire==0.7.1
+tqdm==4.67.1
+tensorboard==2.20.0
+PyYAML==6.0.1
+ninja==1.11.1.1
+# Imported by rq/text2emb/utils.py; embedding generation makes no API calls.
+openai==1.109.1
+# rl.py imports sasrec.py, which imports wandb unconditionally; logging still uses TensorBoard.
+wandb==0.22.2

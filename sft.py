@@ -113,6 +113,8 @@ def train(
     train_from_scratch: bool = False,
     sid_index_path: str = "",
     item_meta_path: str = "",
+    deepspeed: str = None,
+    logging_dir: str = "",
 ):
     set_seed(seed)
     os.environ['WANDB_PROJECT'] = wandb_project
@@ -230,7 +232,7 @@ def train(
         train_dataset=hf_train_dataset,
         eval_dataset=hf_val_dataset,
         args=transformers.TrainingArguments(
-            # deepspeed=deepspeed,
+            deepspeed=deepspeed,
             run_name=wandb_run_name,
             per_device_train_batch_size=micro_batch_size,
             per_device_eval_batch_size=micro_batch_size,
@@ -250,7 +252,8 @@ def train(
             load_best_model_at_end=True,
             ddp_find_unused_parameters=False if ddp else None,
             group_by_length=group_by_length,
-            report_to=None,
+            report_to="tensorboard",
+            logging_dir=logging_dir or os.path.join(output_dir, "tensorboard"),
         ),
         data_collator=transformers.DataCollatorForSeq2Seq(
             tokenizer, pad_to_multiple_of=8, return_tensors="pt", padding=True
@@ -264,8 +267,9 @@ def train(
     trainer.save_model(output_dir)
     
     output_dir = os.path.join(output_dir, "final_checkpoint")
-    trainer.model.save_pretrained(output_dir)
-    tokenizer.save_pretrained(output_dir)
+    trainer.save_model(output_dir)
+    if trainer.is_world_process_zero():
+        tokenizer.save_pretrained(output_dir)
 
 
 

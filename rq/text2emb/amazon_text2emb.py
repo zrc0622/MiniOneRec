@@ -69,7 +69,7 @@ def generate_item_embedding(args, item_text_list, tokenizer, model, accelerator,
         print(f"Start generating embeddings with {num_processes} processes...")
 
     local_results = []
-    batch_size = 1024 
+    batch_size = args.batch_size
     
     pbar = tqdm(total=len(local_texts), desc=f"Proc {process_index}", disable=not accelerator.is_local_main_process)
 
@@ -164,6 +164,7 @@ def parse_args():
     parser.add_argument('--plm_name', type=str, default='qwen')
     parser.add_argument('--plm_checkpoint', type=str, default='xxx', help='Qwen model path')
     parser.add_argument('--max_sent_len', type=int, default=2048)
+    parser.add_argument('--batch_size', type=int, default=1024)
     parser.add_argument('--word_drop_ratio', type=float, default=-1, help='word drop ratio')
     return parser.parse_args()
 

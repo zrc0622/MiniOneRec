@@ -1,0 +1,40 @@
+# 下载的原始数据和预处理产物；保留 data/ 下的脚本与下载清单
+/data/raw/
+/data/Amazon23/
+/data/Amazon18/
+
+# 本地模型权重（仅忽略根目录，rq/models/ 是源码）
+/models/
+
+# 训练输出、SID checkpoint、评估结果和临时文件
+/outputs/
+/output/
+/output_dir/
+/rq/output/
+/logs/
+/results/
+/temp/
+/tmp/
+checkpoint-*/
+checkpoints/
+final_checkpoint/
+
+# TensorBoard 与实验日志
+tensorboard/
+runs/
+wandb/
+events.out.tfevents.*
+
+# 本地 Python 环境与缓存
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.cache/
+
+# macOS 本地文件
+.DS_Store

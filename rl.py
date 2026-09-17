@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from data import D3Dataset, SidDataset, RLTitle2SidDataset, RLSeqTitle2SidDataset, RLSid2TitleDataset, RLSidhis2TitleDataset
 from torch.utils.data import ConcatDataset
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoTokenizer
 import os
 from minionerec_trainer import ReReTrainer
 from sasrec import SASRec
@@ -66,6 +66,7 @@ def train(
     item_meta_path: str = "",
     dapo: bool = False,
     gspo: bool = False,
+    logging_dir: str = "",
 ):
     torch.backends.cuda.enable_flash_sdp(False)  
     torch.backends.cuda.enable_mem_efficient_sdp(False)
@@ -133,8 +134,7 @@ def train(
     print("train_dataset: ", train_dataset)
     print("eval_dataset: ", eval_dataset)
 
-    llm_model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype=torch.bfloat16, device_map="auto")
-    device = llm_model.device
+    device = torch.device("cuda", int(os.environ.get("LOCAL_RANK", 0))) if torch.cuda.is_available() else torch.device("cpu")
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     
     len_seq = 10
@@ -149,7 +149,7 @@ def train(
     if reward_type == "semantic":
         with open(ada_path, "rb") as f:
             item_ada_embd = pickle.load(f)
-        item_ada_embd = torch.tensor(item_ada_embd).to(llm_model.device)
+        item_ada_embd = torch.tensor(item_ada_embd).to(device)
 
     print("Load item_ada_embd successfully.")
 
@@ -282,7 +282,8 @@ def train(
                                 optim="paged_adamw_32bit",
                                 lr_scheduler_type="cosine", 
                                 save_strategy="steps",
-                                report_to="wandb",
+                                report_to="tensorboard",
+                                logging_dir=logging_dir or os.path.join(output_dir, "tensorboard"),
                                 run_name=wandb_run_name,
                             )
     trainer = ReReTrainer(
@@ -309,8 +310,9 @@ def train(
     trainer.save_model(output_dir)
 
     output_dir = os.path.join(output_dir, "final_checkpoint")
-    trainer.model.save_pretrained(output_dir)
-    tokenizer.save_pretrained(output_dir)
+    trainer.save_model(output_dir)
+    if trainer.is_world_process_zero():
+        tokenizer.save_pretrained(output_dir)
     
 if __name__ == "__main__":
     Fire(train)

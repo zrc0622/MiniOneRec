@@ -620,8 +620,7 @@ class EvalSidDataset(CSVBaseDataset):
         target_item = str(row['item_sid'])
         target_item_sid = row["item_sid"]
         last_history_item_sid = row['history_item_sid'][-1] if row['history_item_sid'] else None
-        return {"input": # f"The user has interacted with items {history} in chronological order. Can you predict the next possible item that the user may expect?",
-                f"Can you predict the next possible item the user may expect, given the following chronological interaction history: {history}",
+        return {"input": f"The user has interacted with items {history} in chronological order. Can you predict the next possible item that the user may expect?",
                 "output": target_item + '\n',
                 "dedup": target_item_sid == last_history_item_sid}
     

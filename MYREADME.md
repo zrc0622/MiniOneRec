@@ -75,3 +75,18 @@ bash run.sh tensorboard
 - **保存与评估**：最终权重在各自输出目录的 `final_checkpoint/`，TensorBoard 日志在 `tensorboard/`；Eval prompt 已与 SFT 对齐。
 
 已完成本地小规模链路检查，尚未实测完整 L40 多卡训练、峰值显存与正式指标。RL 验证 batch 保留官方的每卡 128。
+
+## 6. Qwen3-0.6B 对照实验
+
+复用相同环境、预处理数据、Qwen3-Embedding-4B 向量、SID 和 CSV，已完成的 `prepare` 无需重跑。使用独立入口，4 卡、ZeRO-2、每卡 batch 16、梯度累积 16 及其余超参数保持一致：
+
+```bash
+bash run_qwen3_0.6b.sh download
+bash run_qwen3_0.6b.sh sft
+bash run_qwen3_0.6b.sh eval sft
+bash run_qwen3_0.6b.sh rl
+bash run_qwen3_0.6b.sh eval rl
+bash run_qwen3_0.6b.sh tensorboard
+```
+
+0.6B 从 `Qwen/Qwen3-0.6B` 重新做 SFT，RL 默认加载它自己的 SFT `final_checkpoint`，不能复用 1.7B 权重。模型保存在 `models/Qwen3-0.6B/`，训练输出为 `outputs/amazon23_industrial_qwen3_0.6b_{sft,rl}/`；终端日志与评估结果分别位于原日志/结果目录下的 `qwen3_0.6b/`。0.6B 专用路径见脚本顶部，公共数据路径与 GPU 仍在 `config/industrial.sh` 配置。评估继续使用 4 卡，每次单独选择 SFT 或 RL；训练效果需要分别评估。

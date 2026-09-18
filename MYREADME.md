@@ -91,7 +91,21 @@ bash run_qwen3_0.6b.sh tensorboard
 
 0.6B 从 `Qwen/Qwen3-0.6B` 重新做 SFT，RL 默认加载它自己的 SFT `final_checkpoint`，不能复用 1.7B 权重。模型保存在 `models/Qwen3-0.6B/`，训练输出为 `outputs/amazon23_industrial_qwen3_0.6b_{sft,rl}/`；终端日志与评估结果分别位于原日志/结果目录下的 `qwen3_0.6b/`。0.6B 专用路径见脚本顶部，公共数据路径与 GPU 仍在 `config/industrial.sh` 配置。评估继续使用 4 卡，每次单独选择 SFT 或 RL；训练效果需要分别评估。
 
-qwen3 1.7b sft
+## 7. Qwen3-1.7B 学习率对照
+
+原基线峰值学习率为 `3e-4`。先试 `5e-4`，检查提高学习率是否加快验证 loss 下降；这只是对照实验，不保证更快或最终指标更好。保留 linear 衰减、warmup 20 步、10 epochs、4 卡 ZeRO-2、每卡 batch 16、累积 16 及全部数据配置。
+
+```bash
+bash run_qwen3_1.7b_lr.sh sft 5e-4
+bash run_qwen3_1.7b_lr.sh eval sft 5e-4
+bash run_qwen3_1.7b_lr.sh tensorboard 5e-4
+```
+
+从原始 Qwen3-1.7B 预训练权重重新做 SFT，复用现有 SID/CSV，无需重跑 `prepare`。输出在 `outputs/amazon23_industrial_qwen3_1.7b_sft_lr/5e-4/`，终端日志和评估结果分别在原目录下的 `qwen3_1.7b_lr/5e-4/`。默认模型路径为 `models/Qwen3-1.7B/`，可用 `QWEN3_17B_LR_MODEL` 覆盖；输出根目录可用 `QWEN3_17B_LR_OUTPUT_ROOT` 覆盖。同一学习率重复执行会复用目录。
+
+省略学习率时默认 `5e-4`；也可将以上三条命令中的值都换成 `1e-4` 做降低学习率的对照。按相同 epoch 比较验证 loss，并结合各自最佳 checkpoint 的 HR/NDCG 判断；若 `5e-4` 明显震荡或验证效果更差，不应继续盲目提高。
+
+已有 qwen3 1.7b sft 指标：
 [1, 3, 5, 10, 20, 50]
 NDCG:   [0.03823548 0.04090538 0.04299591 0.04527875 0.04822333 0.0525814 ]
 HR      [0.03823548 0.04281383 0.04782528 0.0549403  0.06663367 0.08853554]

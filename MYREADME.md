@@ -90,3 +90,8 @@ bash run_qwen3_0.6b.sh tensorboard
 ```
 
 0.6B 从 `Qwen/Qwen3-0.6B` 重新做 SFT，RL 默认加载它自己的 SFT `final_checkpoint`，不能复用 1.7B 权重。模型保存在 `models/Qwen3-0.6B/`，训练输出为 `outputs/amazon23_industrial_qwen3_0.6b_{sft,rl}/`；终端日志与评估结果分别位于原日志/结果目录下的 `qwen3_0.6b/`。0.6B 专用路径见脚本顶部，公共数据路径与 GPU 仍在 `config/industrial.sh` 配置。评估继续使用 4 卡，每次单独选择 SFT 或 RL；训练效果需要分别评估。
+
+qwen3 1.7b sft
+[1, 3, 5, 10, 20, 50]
+NDCG:   [0.03823548 0.04090538 0.04299591 0.04527875 0.04822333 0.0525814 ]
+HR      [0.03823548 0.04281383 0.04782528 0.0549403  0.06663367 0.08853554]

@@ -121,6 +121,27 @@ bash run_qwen3_0.6b_25ep.sh tensorboard
 
 25 epochs 是上限；仍约每半个 epoch 验证/保存，连续 3 次验证 loss 无改善时早停，`final_checkpoint` 为验证 loss 最佳模型。输出为 `outputs/amazon23_industrial_qwen3_0.6b_sft_25ep/`；日志和评估结果分别在原目录下的 `qwen3_0.6b_25ep/`，TensorBoard 对比原 0.6B 基线与本实验。模型路径复用 `QWEN3_06B_MODEL`，输出可用 `QWEN3_06B_25EP_SFT_OUTPUT_DIR` 覆盖；重复运行会复用目录。
 
+## 9. Qwen3-0.6B：平衡 SID 消融
+
+固定 **0.6B / 3e-4 / 10 epochs 上限**，只把 SID 换为已有平衡 RQ-KMeans 初始化分配。复用当前 4B、2560 维 mean pooling 向量的 `codes_constrained.npy`，无需重新下载、embedding 或聚类。训练从预训练权重开始，4 卡 ZeRO-2、每卡 batch 16、累积 16、linear、warmup 20 步和早停保持原设置。
+
+```bash
+bash run_qwen3_0.6b_balanced.sh prepare
+bash run_qwen3_0.6b_balanced.sh sft
+bash run_qwen3_0.6b_balanced.sh eval sft
+bash run_qwen3_0.6b_balanced.sh tensorboard
+```
+
+`prepare` 读取原数据目录里的 `Industrial_and_Scientific.codes_constrained.npy`、item/index 和 train/valid/test CSV，保留每行商品 ID、标题、顺序与划分，只重映射 SID；新 index/CSV/info 写入 `data/Amazon23/variants/rqkmeans_balanced/`。原实验文件不覆盖，训练/评估前自动校验新数据。已准备好无需重复 `prepare`。
+
+若分配文件只保存在 `outputs/`，第一条命令改为：
+
+```bash
+BALANCED_CODES_PATH=./outputs/Industrial_and_Scientific.codes_constrained.npy bash run_qwen3_0.6b_balanced.sh prepare
+```
+
+模型输出为 `outputs/amazon23_industrial_qwen3_0.6b_sft_balanced/`，日志/评估结果在原目录下的 `qwen3_0.6b_balanced/`。源数据、新数据和模型输出可分别用 `BALANCED_SOURCE_DATA_ROOT`、`BALANCED_DATA_ROOT`、`QWEN3_06B_BALANCED_SFT_OUTPUT_DIR` 覆盖；训练和评估使用同一新数据路径。TensorBoard 对比原 10ep RQ-Kmeans+ 基线；SID 改变引起的碰撞、辅助任务样本变化沿用现有构造逻辑。
+
 # rq-kmeans+
 ## 10 epochs
 qwen3 1.7b sft

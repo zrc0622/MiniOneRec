@@ -109,6 +109,18 @@ bash run_qwen3_1.7b_lr.sh tensorboard 5e-4
 
 省略学习率时默认 `5e-4`；也可将以上三条命令中的值都换成 `1e-4` 做降低学习率的对照。按相同 epoch 比较验证 loss，并结合各自最佳 checkpoint 的 HR/NDCG 判断；若 `5e-4` 明显震荡或验证效果更差，不应继续盲目提高。
 
+## 8. Qwen3-0.6B：25 epochs 实验
+
+固定 **0.6B / 3e-4 / 当前 RQ-Kmeans+**，复用已有 SID/CSV，无需重新 `prepare`。从原始预训练权重重新训练，保留 4 卡 ZeRO-2、每卡 batch 16、累积 16、warmup 20 步；linear 衰减覆盖 25 epochs，因此不是接着原 10 epochs 的学习率曲线续训。
+
+```bash
+bash run_qwen3_0.6b_25ep.sh sft
+bash run_qwen3_0.6b_25ep.sh eval sft
+bash run_qwen3_0.6b_25ep.sh tensorboard
+```
+
+25 epochs 是上限；仍约每半个 epoch 验证/保存，连续 3 次验证 loss 无改善时早停，`final_checkpoint` 为验证 loss 最佳模型。输出为 `outputs/amazon23_industrial_qwen3_0.6b_sft_25ep/`；日志和评估结果分别在原目录下的 `qwen3_0.6b_25ep/`，TensorBoard 对比原 0.6B 基线与本实验。模型路径复用 `QWEN3_06B_MODEL`，输出可用 `QWEN3_06B_25EP_SFT_OUTPUT_DIR` 覆盖；重复运行会复用目录。
+
 # rq-kmeans+
 ## 10 epochs
 qwen3 1.7b sft

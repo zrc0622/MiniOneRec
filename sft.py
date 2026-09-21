@@ -115,6 +115,7 @@ def train(
     item_meta_path: str = "",
     deepspeed: str = None,
     logging_dir: str = "",
+    eval_step: float = 0.05,  # eval/save interval as a fraction of total training steps
 ):
     set_seed(seed)
     os.environ['WANDB_PROJECT'] = wandb_project
@@ -225,7 +226,6 @@ def train(
 
     print(hf_train_dataset)
     print(hf_val_dataset)
-    eval_step = 0.05
     trainer = transformers.Trainer(
         # deepspeed=deepspeed,
         model=model,

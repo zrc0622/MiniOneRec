@@ -78,6 +78,8 @@ bash run.sh tensorboard
 
 RL 已修复 DeepSpeed 0.18.0 在退出时触发的 `BF16_Optimizer.destroy` 越界，并在最终保存完成后释放进程组。该修复只影响清理流程，无需重装依赖；已经保存且能正常评估的模型无需重训。
 
+RL/评估的约束解码已识别合法 SID 的 EOS 终止状态，避免已结束 beam 触发 `No valid tokens` 误报；保持原 EOS 约束和分数，真正非法的前缀仍会告警。
+
 ## 6. Qwen3-0.6B 对照实验
 
 复用相同环境、预处理数据、Qwen3-Embedding-4B 向量、SID 和 CSV，已完成的 `prepare` 无需重跑。使用独立入口，4 卡、ZeRO-2、每卡 batch 16、梯度累积 16 及其余超参数保持一致：

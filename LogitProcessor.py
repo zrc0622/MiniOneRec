@@ -40,6 +40,19 @@ class ConstrainedLogitsProcessor(LogitsProcessor):
         else:
             self.prefix_index = 3
 
+    def _is_completed_sequence(self, batch_id: int, token_ids: List[int]) -> bool:
+        if self.eos_token_id is None or self.eos_token_id not in token_ids:
+            return False
+        eos_index = token_ids.index(self.eos_token_id)
+        # A completed beam can be checked again while longer beams continue.
+        # Accept only a legal EOS transition followed by EOS padding; malformed
+        # prefixes ending in a forced EOS must still produce a warning.
+        return (
+            eos_index > 0
+            and all(token == self.eos_token_id for token in token_ids[eos_index:])
+            and self.eos_token_id in self._prefix_allowed_tokens_fn(batch_id, token_ids[:eos_index])
+        )
+
     
     @add_start_docstrings(LOGITS_PROCESSOR_INPUTS_DOCSTRING)
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
@@ -56,6 +69,10 @@ class ConstrainedLogitsProcessor(LogitsProcessor):
                 prefix_allowed_tokens = self._prefix_allowed_tokens_fn(batch_id, hash_key)
 
                 if len(prefix_allowed_tokens) == 0:
+                    if self.count > 0 and self._is_completed_sequence(batch_id, hash_key):
+                        # Keep exactly the original EOS-only mask and score.
+                        mask[batch_id * self._num_beams + beam_id, self.eos_token_id] = 0
+                        continue
                     warnings.warn(
                         f"No valid tokens found for hash_key {hash_key} at step {self.count}. "
                         f"This indicates the model generated an unexpected token. "

@@ -121,6 +121,18 @@ bash run_qwen3_0.6b_25ep.sh tensorboard
 
 25 epochs 是上限；仍约每半个 epoch 验证/保存，连续 3 次验证 loss 无改善时早停，`final_checkpoint` 为验证 loss 最佳模型。输出为 `outputs/amazon23_industrial_qwen3_0.6b_sft_25ep/`；日志和评估结果分别在原目录下的 `qwen3_0.6b_25ep/`，TensorBoard 对比原 0.6B 基线与本实验。模型路径复用 `QWEN3_06B_MODEL`，输出可用 `QWEN3_06B_25EP_SFT_OUTPUT_DIR` 覆盖；重复运行会复用目录。
 
+### 15 epochs 对照
+
+固定 **0.6B / 3e-4 / 原 RQ-Kmeans+**，改用 15 epochs 的 linear 衰减计划，从预训练权重重新 SFT。其余参数、约半个 epoch 验证/保存和原早停保持一致；数据复用原 SID/CSV，无需 `prepare`。
+
+```bash
+bash run_qwen3_0.6b_15ep.sh sft
+bash run_qwen3_0.6b_15ep.sh eval sft
+bash run_qwen3_0.6b_15ep.sh tensorboard
+```
+
+输出为 `outputs/amazon23_industrial_qwen3_0.6b_sft_15ep/`，可用 `QWEN3_06B_15EP_SFT_OUTPUT_DIR` 覆盖；日志/评估结果在原目录下的 `qwen3_0.6b_15ep/`。TensorBoard 对比 10ep、15ep、25ep；15 是上限，可能提前停止。使用原 RQ-Kmeans+ 的 `DATA_ROOT`，不要指向平衡 SID 目录。
+
 ## 9. Qwen3-0.6B：平衡 SID 消融
 
 固定 **0.6B / 3e-4 / 10 epochs 上限**，只把 SID 换为已有平衡 RQ-KMeans 初始化分配。复用当前 4B、2560 维 mean pooling 向量的 `codes_constrained.npy`，无需重新下载、embedding 或聚类。训练从预训练权重开始，4 卡 ZeRO-2、每卡 batch 16、累积 16、linear、warmup 20 步和早停保持原设置。

@@ -76,6 +76,8 @@ bash run.sh tensorboard
 
 已完成本地小规模链路检查，尚未实测完整 L40 多卡训练、峰值显存与正式指标。RL 验证 batch 保留官方的每卡 128。
 
+RL 已修复 DeepSpeed 0.18.0 在退出时触发的 `BF16_Optimizer.destroy` 越界，并在最终保存完成后释放进程组。该修复只影响清理流程，无需重装依赖；已经保存且能正常评估的模型无需重训。
+
 ## 6. Qwen3-0.6B 对照实验
 
 复用相同环境、预处理数据、Qwen3-Embedding-4B 向量、SID 和 CSV，已完成的 `prepare` 无需重跑。使用独立入口，4 卡、ZeRO-2、每卡 batch 16、梯度累积 16 及其余超参数保持一致：

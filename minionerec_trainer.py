@@ -61,6 +61,7 @@ from transformers import (
     )
 
 from LogitProcessor import ConstrainedLogitsProcessor
+from deepspeed_cleanup import patch_reference_bf16_cleanup
 from transformers.generation import LogitsProcessor
 import math
 
@@ -514,6 +515,7 @@ class ReReTrainer(Trainer):
         if self.ref_model is not None:
             if self.is_deepspeed_enabled:
                 self.ref_model = prepare_deepspeed(self.ref_model, self.accelerator)
+                patch_reference_bf16_cleanup(self.ref_model)
             else:
                 self.ref_model = self.accelerator.prepare_model(self.ref_model, evaluation_mode=True)
 

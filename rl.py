@@ -8,6 +8,7 @@ from torch.utils.data import ConcatDataset
 from transformers import AutoTokenizer
 import os
 from minionerec_trainer import ReReTrainer
+from deepspeed_cleanup import finish_rl_training
 from sasrec import SASRec
 from fire import Fire
 import pickle
@@ -313,6 +314,8 @@ def train(
     trainer.save_model(output_dir)
     if trainer.is_world_process_zero():
         tokenizer.save_pretrained(output_dir)
+
+    finish_rl_training(trainer)
     
 if __name__ == "__main__":
     Fire(train)

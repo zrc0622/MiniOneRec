@@ -167,6 +167,25 @@ bash run_qwen3_0.6b_balanced_15ep.sh tensorboard
 
 模型输出为 `outputs/amazon23_industrial_qwen3_0.6b_sft_balanced_15ep/`（可用 `QWEN3_06B_BALANCED_15EP_SFT_OUTPUT_DIR` 覆盖）；日志/结果位于原目录下的 `qwen3_0.6b_balanced_15ep/`。自定义平衡数据路径继续用 `BALANCED_DATA_ROOT`，训练和评估前自动校验。15 是上限，可能早停；`final_checkpoint` 为验证 loss 最佳模型，TensorBoard 对比 balanced 10ep/15ep。
 
+## 10. Embedding-0.6B / 1024维 / balanced / 10ep
+
+对比第9节的 **Embedding-4B / 2560维 / balanced / 10ep**。仅换embedding模型与维度；backbone仍为Qwen3-0.6B，保留mean pooling、无L2、`3e-4`、四卡ZeRO-2、每卡batch16、累积16、linear、warmup20和原早停。
+
+```bash
+export CUDA_VISIBLE_DEVICES=3,4,5,6
+bash run_qwen3_0.6b_emb06b_balanced.sh download
+bash run_qwen3_0.6b_emb06b_balanced.sh prepare
+bash run_qwen3_0.6b_emb06b_balanced.sh sft
+bash run_qwen3_0.6b_emb06b_balanced.sh eval sft
+bash run_qwen3_0.6b_emb06b_balanced.sh tensorboard
+```
+
+沿用现有环境和Qwen3-0.6B backbone；`download`只下载HF的`Qwen/Qwen3-Embedding-0.6B`。`prepare`复用原商品元数据和CSV划分，重新四卡编码1024维向量、CPU平衡聚类（3×256、seed42），再按商品ID替换CSV中的SID；不运行RQ-Kmeans+。无需重下Amazon数据或重做时间过滤。
+
+新数据、向量和码本在`data/Amazon23/variants/embedding06b_1024_balanced/`；模型在`outputs/amazon23_industrial_qwen3_0.6b_sft_emb06b_balanced/`；日志/结果子目录为`qwen3_0.6b_emb06b_balanced/`。训练从预训练权重开始，最多10ep、约半epoch验证一次，最终保存验证loss最佳模型。训练/评估前校验数据和编码清单，原实验产物不覆盖；已有本实验数据时跳过`prepare`。
+
+自定义路径用`EMB06B_SOURCE_DATA_ROOT`（原CSV数据根目录）、`EMB06B_DATA_ROOT`（新数据目录）、`EMB06B_MODEL`（embedding模型），backbone仍用`QWEN3_06B_MODEL`。模型输出可用`QWEN3_06B_EMB06B_BALANCED_SFT_OUTPUT_DIR`覆盖。TensorBoard对比两种embedding的balanced **10ep**。
+
 # rq-kmeans+
 ## 10 epochs
 qwen3 1.7b sft
@@ -209,6 +228,11 @@ qwen3 0.6b sft
 NDCG:   [0.04058652 0.043909   0.04631021 0.04903452 0.05210262 0.05665202]
 HR      [0.04058652 0.04634041 0.05221803 0.06069418 0.07288251 0.09583617]
 
+
+# Qwen3-Embedding-0.6B balanced kmeans
+
+## 10 epochs
+qwen3 0.6b sft
 
 CUDA_VISIBLE_DEVICES=3,4,5,6 bash run_qwen3_0.6b_balanced.sh sft
 CUDA_VISIBLE_DEVICES=3,4,5,6 bash run_qwen3_0.6b_balanced.sh eval sft

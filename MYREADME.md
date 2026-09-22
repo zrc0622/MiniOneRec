@@ -154,6 +154,19 @@ BALANCED_CODES_PATH=./outputs/Industrial_and_Scientific.codes_constrained.npy ba
 
 模型输出为 `outputs/amazon23_industrial_qwen3_0.6b_sft_balanced/`，日志/评估结果在原目录下的 `qwen3_0.6b_balanced/`。源数据、新数据和模型输出可分别用 `BALANCED_SOURCE_DATA_ROOT`、`BALANCED_DATA_ROOT`、`QWEN3_06B_BALANCED_SFT_OUTPUT_DIR` 覆盖；训练和评估使用同一新数据路径。TensorBoard 对比原 10ep RQ-Kmeans+ 基线；SID 改变引起的碰撞、辅助任务样本变化沿用现有构造逻辑。
 
+### balanced 15 epochs 对照
+
+复用上述平衡 SID 数据，无需重新 `prepare`。固定 **0.6B / 3e-4 / balanced SID**，从预训练权重重新训练，linear 衰减覆盖 15 epochs；四卡 ZeRO-2、每卡 batch 16、累积 16、warmup 20 步、约半个 epoch 验证/保存和原早停保持一致。
+
+```bash
+export CUDA_VISIBLE_DEVICES=3,4,5,6
+bash run_qwen3_0.6b_balanced_15ep.sh sft
+bash run_qwen3_0.6b_balanced_15ep.sh eval sft
+bash run_qwen3_0.6b_balanced_15ep.sh tensorboard
+```
+
+模型输出为 `outputs/amazon23_industrial_qwen3_0.6b_sft_balanced_15ep/`（可用 `QWEN3_06B_BALANCED_15EP_SFT_OUTPUT_DIR` 覆盖）；日志/结果位于原目录下的 `qwen3_0.6b_balanced_15ep/`。自定义平衡数据路径继续用 `BALANCED_DATA_ROOT`，训练和评估前自动校验。15 是上限，可能早停；`final_checkpoint` 为验证 loss 最佳模型，TensorBoard 对比 balanced 10ep/15ep。
+
 # rq-kmeans+
 ## 10 epochs
 qwen3 1.7b sft

@@ -167,6 +167,21 @@ bash run_qwen3_0.6b_balanced_15ep.sh tensorboard
 
 模型输出为 `outputs/amazon23_industrial_qwen3_0.6b_sft_balanced_15ep/`（可用 `QWEN3_06B_BALANCED_15EP_SFT_OUTPUT_DIR` 覆盖）；日志/结果位于原目录下的 `qwen3_0.6b_balanced_15ep/`。自定义平衡数据路径继续用 `BALANCED_DATA_ROOT`，训练和评估前自动校验。15 是上限，可能早停；`final_checkpoint` 为验证 loss 最佳模型，TensorBoard 对比 balanced 10ep/15ep。
 
+### balanced 15ep SFT 接 RL
+
+从上述 **Embedding-4B / 2560维 / balanced / 15ep SFT** 的 `final_checkpoint` 开始，复用同一套 balanced 数据，无需重做 `prepare` 或 SFT。
+
+```bash
+export CUDA_VISIBLE_DEVICES=3,4,5,6
+bash run_qwen3_0.6b_balanced_15ep.sh rl
+bash run_qwen3_0.6b_balanced_15ep.sh eval rl
+bash run_qwen3_0.6b_balanced_15ep.sh tensorboard
+```
+
+RL沿用 `rl.sh`：四卡ZeRO-2、每卡batch16、累积16、2 epochs、学习率`1e-5`、ranking reward、16个候选、beta=`1e-3`，其余参数保持不变。模型输出到 `outputs/amazon23_industrial_qwen3_0.6b_rl_balanced_15ep/`；终端日志为 `logs/qwen3_0.6b_balanced_15ep/rl.log`，评估结果为 `results/amazon23_industrial/qwen3_0.6b_balanced_15ep/rl.json`。TensorBoard包含SFT与RL各自的日志。
+
+自定义SFT目录继续用 `QWEN3_06B_BALANCED_15EP_SFT_OUTPUT_DIR`，RL目录用 `QWEN3_06B_BALANCED_15EP_RL_OUTPUT_DIR`；数据路径继续用 `BALANCED_DATA_ROOT`，须与该SFT训练时一致。SFT评估仍单独运行 `bash run_qwen3_0.6b_balanced_15ep.sh eval sft`，已有结果无需重评。
+
 ## 10. Embedding-0.6B / 1024维 / balanced / 10ep
 
 对比第9节的 **Embedding-4B / 2560维 / balanced / 10ep**。仅换embedding模型与维度；backbone仍为Qwen3-0.6B，保留mean pooling、无L2、`3e-4`、四卡ZeRO-2、每卡batch16、累积16、linear、warmup20和原早停。

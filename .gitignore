@@ -38,3 +38,5 @@ __pycache__/
 
 # macOS 本地文件
 .DS_Store
+
+papers

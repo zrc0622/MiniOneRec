@@ -23,7 +23,7 @@
 ```bash
 cd MiniOneRec
 conda activate minionerec
-export CUDA_VISIBLE_DEVICES=3,4,5,6
+export CUDA_VISIBLE_DEVICES=0,1,2,3
 export LATENT_ROOT=./outputs/latent_qwen3_0.6b_balanced15
 
 bash run_latent.sh encode
@@ -70,3 +70,19 @@ LATENT_EVAL_SPLIT=valid LATENT_EVAL_BEAMS=200 bash run_latent.sh eval sft
 若已跑过旧版VQ（包括3×64维版本），本次可复用历史 `embeddings`，需在新目录重跑VQ、标签及后续SFT/RL。命令仍为 `bash run_latent.sh vq`，训练epoch、学习率等设置沿用上文。
 
 本地验证覆盖tiny-Qwen CPU训练与评估；完整L40/DeepSpeed训练和效果仍需实际实验验证。
+
+
+# 1
+## sft
+"HR@1": 0.03761677906329271,
+"NDCG@1": 0.03761677906329271,
+"HR@3": 0.0454742312689476,
+"NDCG@3": 0.04219355195729239,
+"HR@5": 0.05023819835426591,
+"NDCG@5": 0.04414224913230786,
+"HR@10": 0.06007548103693621,
+"NDCG@10": 0.04728886254274613,
+"HR@20": 0.07096454866052095,
+"NDCG@20": 0.05004254262525347,
+"HR@50": 0.07851265235414218,
+"NDCG@50": 0.05159687782703717,

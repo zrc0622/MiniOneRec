@@ -10,6 +10,7 @@ from utils import *
 from transformers import AutoTokenizer, AutoModel
 from accelerate import Accelerator
 from accelerate.utils import gather_object
+from pooling import pool_embedding
 
 def load_data(args):
     if args.root:
@@ -104,19 +105,18 @@ def generate_item_embedding(args, item_text_list, tokenizer, model, accelerator,
             attention_mask = encoded_sentences.attention_mask
 
             # Model Forward
-            outputs = model(input_ids=input_ids, attention_mask=attention_mask)
+            pooling = getattr(args, 'pooling', 'masked_mean')
+            # The new recipe needs no decoder KV cache; preserve the old call by default.
+            forward_kwargs = {'use_cache': False} if pooling == 'last_token' else {}
+            outputs = model(input_ids=input_ids, attention_mask=attention_mask, **forward_kwargs)
 
             # Mean Pooling (Masked)
             # outputs.last_hidden_state: [batch, seq, dim]
             last_hidden = outputs.last_hidden_state
             
             # [batch, seq] -> [batch, seq, 1]
-            mask_expanded = attention_mask.unsqueeze(-1).expand(last_hidden.size()).float()
-            
-            sum_embeddings = torch.sum(last_hidden * mask_expanded, dim=1)
-            sum_mask = torch.clamp(mask_expanded.sum(dim=1), min=1e-9)
-            
-            mean_output = sum_embeddings / sum_mask # [batch, dim]
+            mean_output = pool_embedding(last_hidden, attention_mask, pooling,
+                                         getattr(args, 'l2_normalize', False))
             
             # return to CPU Numpy
             mean_output = mean_output.cpu().numpy()
@@ -166,6 +166,8 @@ def parse_args():
     parser.add_argument('--max_sent_len', type=int, default=2048)
     parser.add_argument('--batch_size', type=int, default=1024)
     parser.add_argument('--word_drop_ratio', type=float, default=-1, help='word drop ratio')
+    parser.add_argument('--pooling', choices=['masked_mean', 'last_token'], default='masked_mean')
+    parser.add_argument('--l2_normalize', action='store_true')
     return parser.parse_args()
 
 if __name__ == '__main__':

@@ -1,3 +1,5 @@
+> 本仓库当前实验与新服务器任务：请先阅读 [NEW_SERVER_HANDOFF.md](NEW_SERVER_HANDOFF.md)（环境、数据下载、新版商品 SID 基线、兴趣版本区别、离线字符兴趣生成）。
+
 <div align="center">
 
 

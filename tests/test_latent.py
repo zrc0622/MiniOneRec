@@ -28,7 +28,7 @@ from latent.vq import ParallelVQ
 INDEX = {str(i): [f'<a_{i}>', '<b_0>', '<c_0>'] + (['<d_0>'] if i % 2 else []) for i in range(20)}
 
 
-def fixture(size=4):
+def fixture(size=4, k=3):
     torch.manual_seed(42)
     tokens = ['<unk>', '<eos>', 'history']
     backend = Tokenizer(WordLevel({t: i for i, t in enumerate(tokens)}, unk_token='<unk>'))
@@ -38,7 +38,7 @@ def fixture(size=4):
     model = Qwen3ForCausalLM(Qwen3Config(vocab_size=len(tokenizer), hidden_size=24, intermediate_size=32,
         num_hidden_layers=1, num_attention_heads=2, num_key_value_heads=1, head_dim=12,
         max_position_embeddings=1024, eos_token_id=1, pad_token_id=1, tie_word_embeddings=False))
-    protocol = initialize(model, tokenizer, INDEX, dict(codebook_size=size, vq_sha256='fixture'))
+    protocol = initialize(model, tokenizer, INDEX, dict(k=k, codebook_size=size, vq_sha256='fixture'))
     return tokenizer, model, protocol, Grammar(tokenizer, INDEX, protocol)
 
 

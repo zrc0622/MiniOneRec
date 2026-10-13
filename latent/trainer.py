@@ -8,7 +8,7 @@ from trl.models import unwrap_model_for_generation
 
 from interest.trainer import InterestCollator, InterestGRPOTrainer
 from .generation import constrained_logps, full_logps, pack_trajectories, rollout
-from .objective import advantages, grpo_loss
+from .objective import advantages, grpo_loss, sid_rewards
 
 
 class LatentSFTTrainer(Trainer):
@@ -48,9 +48,12 @@ class LatentSFTTrainer(Trainer):
 
 
 class LatentGRPOTrainer(InterestGRPOTrainer):
-    def __init__(self, *, mode, **kwargs):
+    def __init__(self, *, mode, reward_kind='binary', partial_weight=0.2, **kwargs):
         if mode not in ('original', '4x4'):
             raise ValueError(mode)
+        if reward_kind not in ('binary', 'sid_dense') or (mode == 'original' and reward_kind != 'binary'):
+            raise ValueError('SID-dense rewards require 4x4')
+        self.reward_kind, self.partial_weight = reward_kind, partial_weight
         super().__init__(mode='16x1' if mode == 'original' else mode, **kwargs)
         self.mode = mode
         self.logps = full_logps if mode == 'original' else constrained_logps
@@ -73,7 +76,11 @@ class LatentGRPOTrainer(InterestGRPOTrainer):
                     samples = rollout(model, prompt, self.grammar, self.mode, aux, self.temperature)
                     items = [self.grammar.item(s, aux) for s in samples]
                     hits = torch.tensor([float(x == record['target']) for x in items], device=self.accelerator.device)
-                    ia, ya, rewards = advantages(hits, self.mode, aux)
+                    # Auxiliaries retain exact-hit rewards in both experiments.
+                    item_rewards = sid_rewards(items, record['target'],
+                        kind='binary' if aux else self.reward_kind,
+                        partial_weight=self.partial_weight, device=hits.device)
+                    ia, ya, rewards = advantages(item_rewards, self.mode, aux)
                     specs.append((start, '16x1' if self.mode == 'original' else '4x4', bool(aux), ia, ya))
                     prompts.extend([prompt] * 16)
                     completions.extend(samples)
@@ -87,7 +94,7 @@ class LatentGRPOTrainer(InterestGRPOTrainer):
                     metrics[f'{task}/unique_items'].append(torch.tensor(float(len(set(items))), device=hits.device))
                     if not aux:
                         step = 4 if self.mode == '4x4' else 1
-                        count = len({tuple(s[:3]) for s in samples[::step]})
+                        count = len({tuple(s[:self.grammar.k]) for s in samples[::step]})
                         metrics[f'{task}/unique_latents'].append(torch.tensor(float(count), device=hits.device))
             finally:
                 model.train(training)

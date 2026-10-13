@@ -1,0 +1,325 @@
+{
+  "recorded_at": "2026-10-14",
+  "purpose": "Original-server provenance reference; payloads are not in Git. Paths are historical.",
+  "raw_data_manifest": "data/amazon23_industrial_manifest.json",
+  "new_item_dataset": {
+    "original_server_path": "outputs/amazon23_industrial_qwen3_4b_lasttoken_l2_sid_20261010/dataset",
+    "variant": "rqkmeans_balanced_initialization",
+    "rows": {
+      "train": 129296,
+      "valid": 16162,
+      "test": 16163
+    },
+    "items": 13046,
+    "unique_three_level_sids": 10140,
+    "items_with_fourth_token": 4428,
+    "outputs": {
+      "Industrial_and_Scientific/Industrial_and_Scientific.index.json": "410175c1b61750930ccd4f00cdf7073e530b0b2737f7ac56f4dd95d774dc8436",
+      "Industrial_and_Scientific/Industrial_and_Scientific.item.json": "07ea2922e61b68da7fa69496ddb433f4fc87e03b3d2e8ed1b8aec2ca2cc5425f",
+      "train/Industrial_and_Scientific_5_2016-10-2018-11.csv": "963f63bb9c364c8403fc45f7eaf5482155c7727c84e70d77db11c7fe835a5cef",
+      "valid/Industrial_and_Scientific_5_2016-10-2018-11.csv": "99a7cdcd281edf3d26881bf9d4f33e1aab53ac5a9cc07d068c8608bad3f66378",
+      "test/Industrial_and_Scientific_5_2016-10-2018-11.csv": "e9f6591b8a868eed64c39ceada4c0e08e84048529c3f5e113be49b8730634a0c",
+      "info/Industrial_and_Scientific_5_2016-10-2018-11.txt": "19945676ca340687bf33c2abc334042f81d1d60bf8bd2354bf010d133cd2d6ae"
+    }
+  },
+  "new_item_sid_recipe": {
+    "recipe": {
+      "embedding_model_id": "Qwen/Qwen3-Embedding-4B",
+      "embedding_dim": 2560,
+      "pooling": "last_valid_token",
+      "l2_normalize": true,
+      "normalization_dtype": "float32",
+      "embedding_dtype": "float16",
+      "features": [
+        "title",
+        "description"
+      ],
+      "text_cleaning": "MiniOneRec_generate_text",
+      "max_sent_len": 2048,
+      "sid": "rqkmeans_balanced_initialization",
+      "k": 256,
+      "l": 3,
+      "max_iter": 100,
+      "seed": 42,
+      "residual_normalization": false
+    },
+    "embedding_model_path": "/data/zuorongchang/project/MiniOneRec/models/Qwen3-Embedding-4B",
+    "model_config_sha256": "78d2861cbbfd80eee05839200c5a3b7ed64c789f6c1cab4fbb84cc4eae33eaf5",
+    "source_inputs": {
+      "/data/zuorongchang/project/MiniOneRec/data/Amazon23/variants/rqkmeans_balanced/Industrial_and_Scientific/Industrial_and_Scientific.item.json": "07ea2922e61b68da7fa69496ddb433f4fc87e03b3d2e8ed1b8aec2ca2cc5425f",
+      "/data/zuorongchang/project/MiniOneRec/data/Amazon23/variants/rqkmeans_balanced/Industrial_and_Scientific/Industrial_and_Scientific.index.json": "2485feee8b4f5cd0caae632532bc4c511559fd7a518699bc6a4b6a930dba795c",
+      "/data/zuorongchang/project/MiniOneRec/data/Amazon23/variants/rqkmeans_balanced/train/Industrial_and_Scientific_5_2016-10-2018-11.csv": "9cd0de3a45a0ffbccc205d47849481ee8d02c5f3ddc48659e5ce627a8977c300",
+      "/data/zuorongchang/project/MiniOneRec/data/Amazon23/variants/rqkmeans_balanced/valid/Industrial_and_Scientific_5_2016-10-2018-11.csv": "a099398b6d7109471ed9cb81edc6819b410a03f725aea01b4f01760e7a7982f2",
+      "/data/zuorongchang/project/MiniOneRec/data/Amazon23/variants/rqkmeans_balanced/test/Industrial_and_Scientific_5_2016-10-2018-11.csv": "c6b07103d066fc3fea0799cd38349dfa6e2e6f7ef8aeb1d8793e1330f3541ba5"
+    },
+    "encoding": {
+      "recipe": {
+        "embedding_model_id": "Qwen/Qwen3-Embedding-4B",
+        "embedding_dim": 2560,
+        "pooling": "last_valid_token",
+        "l2_normalize": true,
+        "normalization_dtype": "float32",
+        "embedding_dtype": "float16",
+        "features": [
+          "title",
+          "description"
+        ],
+        "text_cleaning": "MiniOneRec_generate_text",
+        "max_sent_len": 2048,
+        "sid": "rqkmeans_balanced_initialization",
+        "k": 256,
+        "l": 3,
+        "max_iter": 100,
+        "seed": 42,
+        "residual_normalization": false
+      },
+      "source_inputs": {
+        "/data/zuorongchang/project/MiniOneRec/data/Amazon23/variants/rqkmeans_balanced/Industrial_and_Scientific/Industrial_and_Scientific.item.json": "07ea2922e61b68da7fa69496ddb433f4fc87e03b3d2e8ed1b8aec2ca2cc5425f",
+        "/data/zuorongchang/project/MiniOneRec/data/Amazon23/variants/rqkmeans_balanced/Industrial_and_Scientific/Industrial_and_Scientific.index.json": "2485feee8b4f5cd0caae632532bc4c511559fd7a518699bc6a4b6a930dba795c",
+        "/data/zuorongchang/project/MiniOneRec/data/Amazon23/variants/rqkmeans_balanced/train/Industrial_and_Scientific_5_2016-10-2018-11.csv": "9cd0de3a45a0ffbccc205d47849481ee8d02c5f3ddc48659e5ce627a8977c300",
+        "/data/zuorongchang/project/MiniOneRec/data/Amazon23/variants/rqkmeans_balanced/valid/Industrial_and_Scientific_5_2016-10-2018-11.csv": "a099398b6d7109471ed9cb81edc6819b410a03f725aea01b4f01760e7a7982f2",
+        "/data/zuorongchang/project/MiniOneRec/data/Amazon23/variants/rqkmeans_balanced/test/Industrial_and_Scientific_5_2016-10-2018-11.csv": "c6b07103d066fc3fea0799cd38349dfa6e2e6f7ef8aeb1d8793e1330f3541ba5"
+      },
+      "embedding_model": "/data/zuorongchang/project/MiniOneRec/models/Qwen3-Embedding-4B",
+      "model_config_sha256": "78d2861cbbfd80eee05839200c5a3b7ed64c789f6c1cab4fbb84cc4eae33eaf5",
+      "embedding_sha256": "a4e25b67bf49228685045457a923503b3afe30e07f5df548ec63fabe4ac0bd69",
+      "diagnostics": {
+        "shape": [
+          13046,
+          2560
+        ],
+        "dtype": "float32",
+        "min_norm": 0.9999998807907104,
+        "max_norm": 1.0000001192092896
+      },
+      "command": [
+        "/data/zuorongchang/miniconda3/envs/minionerec/bin/python",
+        "-m",
+        "torch.distributed.run",
+        "--standalone",
+        "--nproc_per_node=2",
+        "rq/text2emb/amazon_text2emb.py",
+        "--dataset",
+        "Industrial_and_Scientific",
+        "--root",
+        "/data/zuorongchang/project/MiniOneRec/outputs/amazon23_industrial_qwen3_4b_lasttoken_l2_sid_20261010/embeddings/Industrial_and_Scientific",
+        "--plm_checkpoint",
+        "/data/zuorongchang/project/MiniOneRec/models/Qwen3-Embedding-4B",
+        "--batch_size",
+        "32",
+        "--max_sent_len",
+        "2048",
+        "--pooling",
+        "last_token",
+        "--l2_normalize"
+      ],
+      "gpus": [
+        "2",
+        "6"
+      ]
+    },
+    "embedding_diagnostics": {
+      "shape": [
+        13046,
+        2560
+      ],
+      "dtype": "float32",
+      "min_norm": 0.9999998807907104,
+      "max_norm": 1.0000001192092896
+    },
+    "artifacts": {
+      "balanced_sid_manifest.json": "73fc783c37445c1930818318bc1a200955ce7b7a83c3fd99d3c4ec5f99c5004c",
+      "Industrial_and_Scientific/Industrial_and_Scientific.emb-qwen-td.npy": "a4e25b67bf49228685045457a923503b3afe30e07f5df548ec63fabe4ac0bd69",
+      "Industrial_and_Scientific/Industrial_and_Scientific.codes_constrained.npy": "aabfbef1437cf820ee81a3d0a55c7296e34e7cc59bae7628c1e0d50bfb7fe22a",
+      "Industrial_and_Scientific/Industrial_and_Scientific.codebooks_constrained.npz": "6cc411e240813586bbd3ce3ad38dccd7339b93210389b975d9e4934907ddad04"
+    }
+  },
+  "history_interest": {
+    "old": {
+      "original_server_path": "outputs/latent_qwen3_0.6b_balanced15/labels/labels.json",
+      "embedding_recipe": {
+        "model": "/data/zuorongchang/project/MiniOneRec/models/Qwen3-Embedding-4B",
+        "model_hashes": {
+          "config.json": "78d2861cbbfd80eee05839200c5a3b7ed64c789f6c1cab4fbb84cc4eae33eaf5",
+          "tokenizer.json": "83cdf8c3a34f68862319cb1810ee7b1e2c0a44e0864ae930194ddb76bb7feb8d"
+        },
+        "dim": 2560,
+        "pooling": "masked_mean",
+        "normalization": "none",
+        "max_length": 2048,
+        "text": "chronological_numbered_titles_v1",
+        "dtype": "torch.float16"
+      },
+      "vq_options": {
+        "input_dim": 2560,
+        "codebook_size": 256,
+        "latent_dim": 32,
+        "layers": [
+          2048,
+          1024,
+          512,
+          256,
+          128
+        ],
+        "commitment": 0.25
+      },
+      "fit_split": "train",
+      "selection_split": "valid",
+      "best_epoch": 50,
+      "code_statistics": {
+        "train": [
+          {
+            "used": 147,
+            "dead": 109,
+            "perplexity": 132.3619842529297
+          },
+          {
+            "used": 117,
+            "dead": 139,
+            "perplexity": 94.90971374511719
+          },
+          {
+            "used": 98,
+            "dead": 158,
+            "perplexity": 89.19420623779297
+          }
+        ],
+        "valid": [
+          {
+            "used": 143,
+            "dead": 113,
+            "perplexity": 126.4275894165039
+          },
+          {
+            "used": 113,
+            "dead": 143,
+            "perplexity": 98.4288558959961
+          },
+          {
+            "used": 95,
+            "dead": 161,
+            "perplexity": 74.33931732177734
+          }
+        ],
+        "test": [
+          {
+            "used": 142,
+            "dead": 114,
+            "perplexity": 120.97837829589844
+          },
+          {
+            "used": 113,
+            "dead": 143,
+            "perplexity": 91.02525329589844
+          },
+          {
+            "used": 96,
+            "dead": 160,
+            "perplexity": 70.6799545288086
+          }
+        ]
+      }
+    },
+    "new": {
+      "original_server_path": "outputs/latent_qwen3_0.6b_history_lasttoken_l2_sqrtd_vq3_20261012/labels/labels.json",
+      "embedding_recipe": {
+        "model": "/data/zuorongchang/project/MiniOneRec/models/Qwen3-Embedding-4B",
+        "model_hashes": {
+          "config.json": "78d2861cbbfd80eee05839200c5a3b7ed64c789f6c1cab4fbb84cc4eae33eaf5",
+          "tokenizer.json": "83cdf8c3a34f68862319cb1810ee7b1e2c0a44e0864ae930194ddb76bb7feb8d"
+        },
+        "dim": 2560,
+        "pooling": "last_valid_token",
+        "normalization": "l2",
+        "max_length": 2048,
+        "text": "chronological_numbered_titles_v1",
+        "dtype": "torch.float16",
+        "embedding_input": "history",
+        "contains_target": false,
+        "dedup": "history_titles",
+        "truncation": "drop_oldest_complete_history_titles",
+        "intended_use": "latent_supervision_only",
+        "inference_input": "history_only"
+      },
+      "vq_options": {
+        "input_dim": 2560,
+        "codebook_size": 256,
+        "latent_dim": 32,
+        "layers": [
+          2048,
+          1024,
+          512,
+          256,
+          128
+        ],
+        "commitment": 0.25,
+        "input_scale": 50.59644256269407
+      },
+      "fit_split": "train",
+      "selection_split": "valid",
+      "best_epoch": 38,
+      "code_statistics": {
+        "train": [
+          {
+            "used": 208,
+            "dead": 48,
+            "perplexity": 194.81248474121094
+          },
+          {
+            "used": 213,
+            "dead": 43,
+            "perplexity": 196.74867248535156
+          },
+          {
+            "used": 125,
+            "dead": 131,
+            "perplexity": 113.80545043945312
+          }
+        ],
+        "valid": [
+          {
+            "used": 206,
+            "dead": 50,
+            "perplexity": 175.6343994140625
+          },
+          {
+            "used": 212,
+            "dead": 44,
+            "perplexity": 189.95895385742188
+          },
+          {
+            "used": 125,
+            "dead": 131,
+            "perplexity": 112.67948913574219
+          }
+        ],
+        "test": [
+          {
+            "used": 207,
+            "dead": 49,
+            "perplexity": 170.84384155273438
+          },
+          {
+            "used": 213,
+            "dead": 43,
+            "perplexity": 187.77255249023438
+          },
+          {
+            "used": 125,
+            "dead": 131,
+            "perplexity": 112.49298095703125
+          }
+        ]
+      },
+      "vq_input_transform": {
+        "kind": "sqrt_dim",
+        "scale": 50.59644256269407,
+        "source_normalization": "l2",
+        "applied_inside_model": true,
+        "reconstruction_units": "scaled_input"
+      },
+      "validation_reconstruction_source_scale": 9.40055731509829e-05,
+      "reconstruction_over_mean_baseline": 0.5298085654070555
+    }
+  }
+}

@@ -3,6 +3,8 @@ from .core import atomic_id, history_records, load_labels
 
 
 def supervised_example(record, codes, tokenizer, names, max_length=512):
+    if len(codes) != len(names):
+        raise ValueError('Latent label count differs from token protocol')
     latent = [atomic_id(tokenizer, names[k][int(c)]) for k, c in enumerate(codes)]
     target = latent + tokenizer.encode(record['target'] + '\n', add_special_tokens=False) + [tokenizer.eos_token_id]
     prompt = tokenizer.encode(record['prompt'], add_special_tokens=False)
@@ -11,7 +13,7 @@ def supervised_example(record, codes, tokenizer, names, max_length=512):
     prompt = prompt[-(max_length - len(target)):]
     ids = prompt + target
     return dict(input_ids=ids, attention_mask=[1] * len(ids), labels=[-100] * len(prompt) + target,
-                interest_mask=[0] * len(prompt) + [1] * 3 + [0] * (len(target) - 3))
+                interest_mask=[0] * len(prompt) + [1] * len(latent) + [0] * (len(target) - len(latent)))
 
 
 def sft_datasets(train_file, eval_file, items, index_file, index, tokenizer, protocol, label_root, seed=42):
@@ -19,19 +21,23 @@ def sft_datasets(train_file, eval_file, items, index_file, index, tokenizer, pro
     result = []
     for split, path in (('train', train_file), ('valid', eval_file)):
         codes, manifest = load_labels(label_root, split, path, index)
-        if manifest['vq_sha256'] != protocol['label_model_sha256']:
+        label_hash = manifest.get('label_model_sha256') or manifest['vq_sha256']
+        if label_hash != protocol['label_model_sha256'] or manifest['k'] != protocol['k']:
             raise ValueError('Tokenizer and label generator differ')
-        records = history_records(path, index)
+        records = history_records(path, index, protocol['k'])
         result.append([supervised_example(r, c, tokenizer, protocol['tokens']) for r, c in zip(records, codes)])
+        if protocol.get('prediction') == 'parallel_bidirectional_queries':
+            from .parallel import parallel_example
+            result[-1] = [parallel_example(x, protocol['query_ids']) for x in result[-1]]
     for ds in (SidItemFeatDataset(items, index_file, tokenizer, max_len=512, seed=seed),
                FusionSeqRecDataset(train_file, items, index_file, tokenizer, max_len=512, seed=seed)):
         result[0].extend(dict(x, interest_mask=[0] * len(x['input_ids'])) for x in ds)
     return result
 
 
-def rl_records(train_file, items, index_file, index, title_sample=10000):
+def rl_records(train_file, items, index_file, index, title_sample=10000, k=3):
     from data import RLTitle2SidDataset, RLSeqTitle2SidDataset
-    records = history_records(train_file, index)
+    records = history_records(train_file, index, k)
     # Exact original auxiliary constructors, including original seed=0 sampling.
     # These tasks retain SID-only responses and original prompts in BOTH RL modes.
     for ds, task in ((RLTitle2SidDataset(items, index_file, sample=-1), 'item_identification'),

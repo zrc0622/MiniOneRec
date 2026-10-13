@@ -1,0 +1,46 @@
+{
+  "version": 3,
+  "primary_metrics": [
+    "Recall@5",
+    "Recall@10",
+    "Recall@20",
+    "NDCG@5",
+    "NDCG@10",
+    "NDCG@20"
+  ],
+  "target_count": 1,
+  "recall_equals_hit_rate": true,
+  "reference": "papers/OneRec-Think.pdf",
+  "exploration_split": "fixed20percent_valid_seed42",
+  "search_protocol_change": true,
+  "legacy_metrics_retained": true,
+  "note": "2026-10-10 user explicitly requests both latent eval methods on every future eval, jointly report allsix Recall/NDCG5/10/20 plus full20 coverage. Fixed20%valid seed42 for exploration, same rows across models and methods. @20 projectextension beyond paper. No change to already completed artifacts or currently running jobs.",
+  "latent_eval_methods": [
+    "single20",
+    "four20_marginal"
+  ],
+  "run_both_latent_methods": true,
+  "latent_search_protocols": {
+    "single20": {
+      "latent_beams": 4,
+      "selected_latents": 1,
+      "item_beams_per_latent": 20,
+      "aggregation": "conditional_likelihood_under_MAP_complete_latent",
+      "top_k": 20
+    },
+    "four20_marginal": {
+      "latent_beams": 4,
+      "selected_latents": 4,
+      "item_beams_per_latent": 20,
+      "aggregation": "cross_score_every_unique_proposal_under_all4_latents_then_logsumexp_joint_full_vocab_probabilities",
+      "score_batch": 32,
+      "top_k": 20
+    }
+  },
+  "no_latent_reference": {
+    "method": "direct50",
+    "top_k": 20,
+    "note": "SID-only models have no latent branches; run once as shared reference for both latent protocols."
+  },
+  "report_both_without_per_model_selection": true
+}

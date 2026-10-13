@@ -1,4 +1,7 @@
 """Original ranking reward and the independent 4×4 hierarchical objective."""
+import math
+import re
+
 import torch
 from interest.objective import advantages as hierarchical_advantages, grpo_loss
 
@@ -18,3 +21,20 @@ def advantages(hits, mode, auxiliary=False):
         advantage = (reward - reward.mean()) / (reward.std(correction=1) + 1e-4)
         return advantage, advantage, reward
     return hierarchical_advantages(hits, '4x4', bool(auxiliary))
+
+
+def sid_rewards(items, target, *, kind='binary', partial_weight=0.2, device=None):
+    """Exact hit plus optional positional matching of a/b/c, never d or EOS."""
+    if kind not in ('binary', 'sid_dense') or not math.isfinite(partial_weight) or partial_weight < 0:
+        raise ValueError('Invalid SID reward settings')
+    hits = torch.tensor([float(item == target) for item in items], device=device)
+    if kind == 'binary':
+        return hits
+    def semantic_tokens(sid):
+        match = re.fullmatch(r'(<a_\d+>)(<b_\d+>)(<c_\d+>)(?:<d_\d+>)?', sid)
+        if match is None:
+            raise ValueError(f'Invalid reward SID: {sid}')
+        return match.groups()
+    gold = semantic_tokens(target)
+    fractions = [sum(a == b for a, b in zip(semantic_tokens(item), gold)) / 3 for item in items]
+    return hits + partial_weight * torch.tensor(fractions, device=device)

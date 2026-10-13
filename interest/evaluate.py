@@ -27,6 +27,9 @@ def summarize(rows):
                 ndcg += 1 / math.log2(rank + 2)
         values[f"HR@{k}"] = hr / len(rows)
         values[f"NDCG@{k}"] = ndcg / len(rows)
+    # Each history has one positive item, so Recall and Hit Rate coincide.
+    for k in (5, 10, 20):
+        values[f"Recall@{k}"] = values[f"HR@{k}"]
     values["mean_unique_candidates"] = sum(len(r["predict"]) for r in rows) / len(rows)
     values["examples"] = len(rows)
     return values

@@ -40,3 +40,7 @@ __pycache__/
 .DS_Store
 
 papers
+
+# 本机工作计划和原始分析产物；精简可迁移报告保存在 docs/
+/.planning/
+/analysis/

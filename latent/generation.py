@@ -8,7 +8,9 @@ from .core import atomic_id
 
 class Grammar:
     def __init__(self, tokenizer, index, protocol):
-        self.k, self.eos, self.tokenizer = 3, tokenizer.eos_token_id, tokenizer
+        self.k, self.eos, self.tokenizer = protocol.get('k', len(protocol['tokens'])), tokenizer.eos_token_id, tokenizer
+        if self.k not in (2, 3) or len(protocol['tokens']) != self.k:
+            raise ValueError('Invalid latent token slot protocol')
         self.slots = [[atomic_id(tokenizer, t) for t in group] for group in protocol['tokens']]
         self.tries, self.sid_by_ids = {}, {}
         suffix = tuple(tokenizer.encode('\n', add_special_tokens=False)) + (self.eos,)
@@ -68,6 +70,7 @@ def generate(model, prompt, grammar, count, phase='joint', auxiliary=False,
         top_k=0 if sample else 50, top_p=1.0, repetition_penalty=1.0, pad_token_id=grammar.eos, eos_token_id=grammar.eos,
         forced_eos_token_id=None, renormalize_logits=sampling == 'independent', use_cache=True)
     sequences = model.generate(input_ids=ids, attention_mask=torch.ones_like(ids), generation_config=cfg,
+        use_model_defaults=False,
         do_sample=sample, num_beams=beams, num_return_sequences=count,
         prefix_allowed_tokens_fn=lambda batch_id, tokens: grammar.allowed(tokens[width:].tolist(), phase, auxiliary),
         synced_gpus=False)[:, width:].tolist()

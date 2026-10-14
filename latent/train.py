@@ -41,6 +41,8 @@ def parser():
     p.add_argument('--eval_steps', type=float, default=0.0999)
     p.add_argument('--save_steps', type=float, default=0.1)
     p.add_argument('--eval_limit', type=int, default=0, help='Smoke runs only: limit validation prompts')
+    p.add_argument('--rl_eval_fraction', type=float, default=1.0)
+    p.add_argument('--rl_save_total_limit', type=int, default=20)
     p.add_argument('--sft_eval_fraction', type=float, default=1.0)
     p.add_argument('--sft_eval_every_epochs', type=float, default=0.5)
     p.add_argument('--sft_save_every_epochs', type=float, default=0.5)
@@ -68,6 +70,10 @@ def validate_sft_resume(o, output):
     options.pop('resume_from_checkpoint', None)
     original = dict(previous['options'])
     original.pop('resume_from_checkpoint', None)
+    # RL-only controls do not affect SFT recovery, including older checkpoints.
+    for key in ('rl_eval_fraction', 'rl_save_total_limit'):
+        options.pop(key, None)
+        original.pop(key, None)
     if options != original:
         raise ValueError('Resume must retain original training options')
     for path, digest in previous['source_hashes'].items():
@@ -86,6 +92,8 @@ def main():
         raise ValueError('Early stopping requires SFT best-checkpoint loading; use patience 0 with final weights')
     if (o.epochs is not None and o.epochs <= 0) or (o.lr is not None and o.lr <= 0):
         raise ValueError('Epochs and LR must be positive')
+    if not 0 < o.rl_eval_fraction <= 1 or o.rl_save_total_limit < 1:
+        raise ValueError('Invalid RL validation fraction or checkpoint retention')
     if not 0 <= o.partial_weight < float('inf') or o.eval_steps <= 0 or o.save_steps <= 0:
         raise ValueError('Invalid reward/evaluation settings')
     if o.reward_kind != 'binary' and (o.stage != 'rl' or o.mode != '4x4'):
@@ -137,11 +145,14 @@ def main():
         protocol = validate_protocol(model.config, tokenizer, index)
         train = rl_records(o.train_file, o.items, o.index, index, o.title_sample, protocol['k'])
         valid = history_records(o.eval_file, index, protocol['k'])
+        validation_full_rows = len(valid)
+        validation_ids = sorted(np.random.default_rng(o.seed).choice(len(valid), max(1, int(len(valid) * o.rl_eval_fraction)), replace=False).tolist()) if o.rl_eval_fraction < 1 else list(range(len(valid)))
         if o.eval_limit:
-            valid = valid[:o.eval_limit]
+            validation_ids = validation_ids[:o.eval_limit]
+        valid = [valid[i] for i in validation_ids]
         args = InterestRLArguments(**common, learning_rate=o.lr or 1e-5, warmup_ratio=0.03,
             lr_scheduler_type='cosine', optim='paged_adamw_32bit' if cuda else 'adamw_torch',
-            max_grad_norm=0.3, save_total_limit=20, eval_steps=o.eval_steps, save_steps=o.save_steps,
+            max_grad_norm=0.3, save_total_limit=o.rl_save_total_limit, eval_steps=o.eval_steps, save_steps=o.save_steps,
             load_best_model_at_end=False, gradient_checkpointing=True)
         trainer = LatentGRPOTrainer(model=model, args=args, processing_class=tokenizer,
             grammar=Grammar(tokenizer, index, protocol), mode=o.mode, beta=o.beta,
@@ -159,9 +170,9 @@ def main():
         write_json(output / 'latent_run.json', dict(options=vars(o), training_args=args.to_dict(), protocol=protocol,
             source_hashes={str(Path(p).resolve()): sha(p) for p in paths}, task_counts=task_counts,
             train_rows=len(train), validation_rows=len(valid)))
-        if o.stage == 'sft':
-            write_json(output / 'validation_subset.json', dict(row_ids=validation_ids, seed=o.seed,
-                fraction=o.sft_eval_fraction, full_rows=validation_full_rows, examples=len(valid), data_sha256=sha(o.eval_file)))
+        write_json(output / 'validation_subset.json', dict(row_ids=validation_ids, seed=o.seed,
+            fraction=o.sft_eval_fraction if o.stage == 'sft' else o.rl_eval_fraction,
+            stage=o.stage, full_rows=validation_full_rows, examples=len(valid), data_sha256=sha(o.eval_file)))
         tokenizer.save_pretrained(output)
     trainer.accelerator.wait_for_everyone()
     trainer.train(resume_from_checkpoint=o.resume_from_checkpoint)
